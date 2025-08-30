@@ -1,11 +1,57 @@
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef, useState } from "react";
+
 const SectionOne = () => {
+  const imageContainerRef = useRef(null);
+  const imageRef = useRef(null);
+  const [imageIndex, setImageIndex] = useState(0);
+
+  const images = [
+    "../images/Carl.jpg",
+    "../images/Olivier.jpg",
+    "../images/Lawrence.jpg",
+    "../images/HugoJoseph.jpg",
+    "../images/ChantalG.jpg",
+    "../images/MyleneS.jpg",
+    "../images/SophieA.jpg",
+    "../images/Claire.jpg",
+    "../images/Michele.jpg",
+    "../images/MEL.jpg",
+    "../images/CAMILLE.jpg",
+    "../images/MEGGIE.jpg",
+    "../images/joel.jpg",
+  ];
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  useGSAP(() => {
+    gsap.to(imageContainerRef.current, {
+      scrollTrigger: {
+        trigger: imageContainerRef.current,
+        start: "top 23%",
+        end: "top -110%",
+        scrub: true,
+        pin: true,
+        onUpdate: (e) => {
+          if (e.progress < 1) {
+            setImageIndex(Math.floor(e.progress * images.length));
+          } else {
+            setImageIndex(Math.floor(e.progress * images.length - 1));
+          }
+        },
+      },
+    });
+  });
+
   return (
     <div className="font-[lausanne-500]">
-      <div className="absolute top-[23%] left-[30%] bg-red-500 w-[15vw] h-[20vw] rounded-3xl overflow-hidden">
-        <img
-          src="../../../public/images/CAMILLE_640X960_2-640x960.jpg"
-          alt="error"
-        />
+      <div
+        ref={imageContainerRef}
+        className="absolute top-[23%] left-[30%] bg-red-500 w-[15vw] h-[20vw] rounded-3xl overflow-hidden"
+      >
+        <img ref={imageRef} src={images[imageIndex]} alt="error" />
       </div>
       <div className="relative">
         <div className="text-center mt-[55vh]">
