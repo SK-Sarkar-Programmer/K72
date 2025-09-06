@@ -5,11 +5,18 @@ import Agency from "../pages/Agency/Agency";
 import Work from "../pages/Work/Work";
 import Blog from "../pages/Blog/Blog";
 import Contact from "../pages/Contact/Contact";
+import ContextProvider from "../provider/ContextProvider";
+import MainLoader from "../loader/MainLoader";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ContextProvider>
+        <MainLoader />
+        <MainLayout />
+      </ContextProvider>
+    ),
     children: [
       { index: true, element: <Home /> },
       { path: "/about", element: <Agency /> },
@@ -17,6 +24,10 @@ const router = createBrowserRouter([
       { path: "/blog", element: <Blog /> },
       { path: "/contact", element: <Contact /> },
     ],
+  },
+  {
+    path: "*",
+    element: <div>404 Not Found</div>,
   },
 ]);
 
