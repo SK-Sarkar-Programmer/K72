@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import useLoader from "../hooks/useLoader";
 import useAppContext from "../hooks/useAppContext";
 import gsap from "gsap";
@@ -9,78 +9,86 @@ const MainLoader = () => {
   const animationRef = useRef(null);
 
   const { isLoading } = useLoader({
-    delay: 300,
+    delay: 500,
     onError: (error) => console.error("Loading error", error),
   });
   const { isNavigating, setIsNavigating } = useAppContext();
 
-  useGSAP(() => {
-    // Clear any previous animations
+  const handleCleanAnimation = useCallback(() => {
     if (animationRef.current) {
       animationRef.current.kill();
+      animationRef.current = null;
     }
+  }, []);
 
-    const container = mainContainerRef.current;
-    if (!container) return;
+  useGSAP(() => {
+    if (!mainContainerRef.current) return;
 
-    // Show the container initially
-    gsap.set(container, {
-      display: "block",
-      opacity: 0,
-    });
+    gsap.set(mainContainerRef.current, { display: "block", opacity: 1 });
+    gsap.set(".loader-line", { y: 0 });
 
     if (isLoading) {
-      // Red animation for loading
-      animationRef.current = gsap
-        .timeline()
-        .to(container, {
-          backgroundColor: "#ff0000",
-          opacity: 1,
-          duration: 0.5,
-          ease: "power2.out",
-        })
-        .to(container, {
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.in",
-          delay: 0.3,
-        })
-        .set(container, {
-          display: "none",
-        });
+      animationRef.current = gsap.timeline({
+        onComplete: () =>
+          gsap.set(mainContainerRef.current, { opacity: 0, display: "none" }),
+      });
+
+      animationRef.current.to(".loader-line", {
+        y: "100%",
+        stagger: {
+          amount: -0.35,
+        },
+        duration: 0.55,
+        ease: "sine.out",
+      });
     } else if (isNavigating) {
-      // Green animation for navigation
-      animationRef.current = gsap
-        .timeline()
-        .to(container, {
-          backgroundColor: "#00ff00",
-          opacity: 1,
-          duration: 0.5,
-          ease: "power2.out",
-        })
-        .to(container, {
-          opacity: 0,
-          duration: 0.5,
-          ease: "power2.in",
-          delay: 0.3,
-          onComplete: () => {
+      animationRef.current = gsap.timeline({
+        onComplete: () => {
+          gsap.set(mainContainerRef.current, { opacity: 0, display: "none" }),
             setIsNavigating(false);
+        },
+      });
+
+      animationRef.current
+        .from(".loader-line", {
+          y: "-100%",
+          stagger: {
+            amount: -0.35,
           },
+          duration: 0.55,
+          ease: "sine.out",
         })
-        .set(container, {
-          display: "none",
+        .to(".loader-line", {
+          y: "100%",
+          stagger: {
+            amount: -0.35,
+          },
+          duration: 0.55,
+          ease: "sine.out",
         });
     } else {
-      // Hide container if neither loading nor navigating
-      gsap.set(container, {
-        display: "none",
+      gsap.set(mainContainerRef.current, {
         opacity: 0,
+        display: "none",
       });
     }
-  }, [isLoading, isNavigating, setIsNavigating]);
+
+    return handleCleanAnimation;
+  }, [isNavigating, setIsNavigating, handleCleanAnimation]);
 
   return (
-    <div ref={mainContainerRef} className="fixed w-full h-svh bg-black"></div>
+    <div
+      ref={mainContainerRef}
+      className="fixed w-full h-svh z-40 overflow-hidden"
+    >
+      <div className="w-full h-full flex">
+        <div className="loader-line w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-full bg-black"></div>
+        <div className="loader-line w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-full bg-black"></div>
+        <div className="hidden sm:block loader-line w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-full bg-black"></div>
+        <div className="hidden sm:block loader-line w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-full bg-black"></div>
+        <div className="hidden lg:block loader-line w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 h-full bg-black"></div>
+      </div>
+    </div>
   );
 };
 
