@@ -21,11 +21,25 @@ const MainLoader = () => {
     }
   }, []);
 
+  const animationConfig = {
+    stagger: {
+      amount: -0.35,
+    },
+    duration: 0.55,
+    ease: "sine.out",
+  };
+
   useGSAP(() => {
     if (!mainContainerRef.current) return;
 
-    gsap.set(mainContainerRef.current, { display: "block", opacity: 1 });
+    gsap.set(mainContainerRef.current, {
+      display: "block",
+      opacity: 1,
+      pointerEvents: "none",
+    });
     gsap.set(".loader-line", { y: 0 });
+
+    handleCleanAnimation();
 
     if (isLoading) {
       animationRef.current = gsap.timeline({
@@ -35,11 +49,7 @@ const MainLoader = () => {
 
       animationRef.current.to(".loader-line", {
         y: "100%",
-        stagger: {
-          amount: -0.35,
-        },
-        duration: 0.55,
-        ease: "sine.out",
+        ...animationConfig,
       });
     } else if (isNavigating) {
       animationRef.current = gsap.timeline({
@@ -52,28 +62,28 @@ const MainLoader = () => {
       animationRef.current
         .from(".loader-line", {
           y: "-100%",
-          stagger: {
-            amount: -0.35,
-          },
-          duration: 0.55,
-          ease: "sine.out",
+          ...animationConfig,
         })
         .to(".loader-line", {
           y: "100%",
-          stagger: {
-            amount: -0.35,
-          },
-          duration: 0.55,
-          ease: "sine.out",
+          ...animationConfig,
         });
     } else {
       gsap.set(mainContainerRef.current, {
         opacity: 0,
         display: "none",
+        pointerEvents: "none",
       });
     }
 
-    return handleCleanAnimation;
+    return () => {
+      handleCleanAnimation;
+      gsap.set(mainContainerRef.current, {
+        display: "none",
+        opacity: 0,
+        pointerEvents: "none",
+      });
+    };
   }, [isNavigating, setIsNavigating, handleCleanAnimation]);
 
   return (
